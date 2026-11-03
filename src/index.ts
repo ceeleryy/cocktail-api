@@ -52,5 +52,15 @@ const myBar = ["tequila", "lime juice", "triple sec", "vodka", "cranberry juice"
 
 const availableCocktails = cocktails.filter(cocktail => canMake(cocktail, myBar));
 
-console.log("Cocktails you can make:");
-availableCocktails.forEach(cocktail => console.log(cocktail.name));
+function missingIngredients(cocktail: Cocktail, myBar: string[]): string[] {
+    return cocktail.ingredients.filter(ingredient => !myBar.includes(ingredient));
+}
+
+const lines = cocktails.map(cocktail => {
+  const missing = missingIngredients(cocktail, myBar);
+  return missing.length > 0
+    ? `${cocktail.name} – missing: ${missing.join(", ")}`
+    : `${cocktail.name} – ready to mix!`;
+});
+
+lines.forEach(line => console.log(line));
