@@ -50,3 +50,13 @@ export async function getCocktails(): Promise<Cocktail[]> {
   await setTimeout(1000); // wait 1 second
   return cocktails;
 }
+
+export function addCocktail(newCocktail: Omit<Cocktail, "id">): Cocktail {
+    const ids = cocktails.map((cocktail) => cocktails.length);
+    const highest = Math.max(...ids);
+    
+    const created: Cocktail = { id: highest + 1, ...newCocktail};
+    
+    cocktails.push(created);
+    return created;
+}
