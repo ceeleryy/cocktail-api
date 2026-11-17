@@ -1,15 +1,18 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { addCocktail, cocktails, getCocktails } from "./data.js";
+import { addCocktail, getCocktails } from "./data.js";
 import { canMake } from "./bar.js";
+import { db } from "./db/index.js";
+import { cocktails } from "./db/schema.js";
+import { eq } from "drizzle-orm";
 
 const app = new Hono();
 
 app.get("/", (c) => c.text("Welcome to the cocktail bar 🍸"));
 
 app.get("/cocktails", async (c) => {
-  const cocktails = await getCocktails();
-  return c.json(cocktails);
+  const result = await db.select().from(cocktails);
+  return c.json(result);
 });
 
 app.get("/cocktails/makeable", async (c) => {
@@ -25,11 +28,20 @@ app.get("/cocktails/makeable", async (c) => {
 
 app.get("/cocktails/:id", async (c) => {
   const id = Number(c.req.param("id"));
-  const cocktails = await getCocktails();
-  const cocktail = cocktails.find((drink) => drink.id === id);
+
+  if (Number.isNaN(id)) {
+    return c.json({ error: "id must be a number" }, 400);
+  }
+
+  const [cocktail] = await db
+    .select()
+    .from(cocktails)
+    .where(eq(cocktails.id, id));
+
   if (!cocktail) {
     return c.json({ error: "Cocktail not found" }, 404);
   }
+
   return c.json(cocktail);
 });
 
